@@ -33,7 +33,7 @@ int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 
 int startHour = 1;
-int startMinute = 10;
+int startMinute = 21;
 int startSecond = 15;
 
 int directionOffset = 0;
@@ -117,8 +117,10 @@ void showTime()
 }
 
 // time should be floatHour() * PIXELS_PER_HOUR or changed to minutes or seconds
-void determineClockHandPixelsForTime(float time, int *brightnessArray, int *pixelIndexesArray)
+void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
 { 
+  
+  time = time * pixelsPerUnit;
   brightnessArray[0] = (time - (int)time) * BRIGHTNESS;
   pixelIndexesArray[0] = directionOffset - (topLEDOffset + ((int)time + 1)) * -DIRECTION;
   if(pixelIndexesArray[0] > NUMBER_OF_PIXELS_IN_RING - 1)
@@ -136,17 +138,17 @@ void determineClockHandPixelsForTime(float time, int *brightnessArray, int *pixe
 
 void determineHourPixels()
 {
-  determineClockHandPixelsForTime(floatHour() * PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes); 
+  determineClockHandPixelsForTime(floatHour(), PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes); 
 }
 
 void determineMinutePixels()
 {
-  determineClockHandPixelsForTime(floatMinute() * PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes); 
+  determineClockHandPixelsForTime(floatMinute(), PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes); 
 }
 
 void determineSecondPixels()
 {
-  determineClockHandPixelsForTime(floatSecond() * PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes); 
+  determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes); 
 }
 
 
