@@ -1,7 +1,5 @@
 #include <Adafruit_NeoPixel.h>
 
-// TODO: Blink
-
 #define START_HOUR 4
 #define START_MINUTE 50
 #define START_SECOND 0
