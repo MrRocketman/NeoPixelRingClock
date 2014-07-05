@@ -1,8 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 
 // TODO: Blink
-// TODO: Choose which hands
-// TODO: Choose colors
 
 #define NUMBER_OF_PIXELS_IN_RING 16
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
@@ -30,7 +28,11 @@
 
 // If using type 2, the NUMBER_OF_LEDS_FOR_xxxx_HAND above should be odd numbers
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
-#define USE_SECONDS 0 // 1 means a second hand, 0 means a millisecond hand
+
+#define SHOW_HOUR_HAND 1
+#define SHOW_MINUTE_HAND 1
+#define SHOW_SECOND_HAND 1
+#define SHOW_MILLISECOND_HAND 1
 
 #define BLINK 0
 
@@ -97,16 +99,22 @@ void loop()
 
 void showTime()
 {
-    if(USE_SECONDS)
-    {
-        determineSecondPixels();
-    }
-    else
+    if(SHOW_MILLISECOND_HAND)
     {
         determineMillisecondPixels();
     }
-    determineMinutePixels();
-    determineHourPixels();
+    if(SHOW_SECOND_HAND)
+    {
+        determineSecondPixels();
+    }
+    if(SHOW_MINUTE_HAND)
+    {
+        determineMinutePixels();
+    }
+    if(SHOW_HOUR_HAND)
+    {
+        determineHourPixels();
+    }
     
     uint8_t red, green, blue;
     // Set all empty pixels to empty
@@ -120,38 +128,32 @@ void showTime()
         for(int i2 = 0; i2 < LARGEST_NUMBER_OF_LEDS_FOR_A_HAND; i2 ++)
         {
             // Set the red if there is an hour pixel with the current index
-            if(hourPixelIndexes[i2] == i)
+            if(hourPixelIndexes[i2] == i && SHOW_HOUR_HAND)
             {
                 red += hourPixelBrightnesses[i2] * HOUR_HAND_RED;
                 green += hourPixelBrightnesses[i2] * HOUR_HAND_GREEN;
                 blue += hourPixelBrightnesses[i2] * HOUR_HAND_BLUE;
             }
             // Set the green if there is an minute pixel with the current index
-            if(minutePixelIndexes[i2] == i)
+            if(minutePixelIndexes[i2] == i && SHOW_MINUTE_HAND)
             {
                 red += minutePixelBrightnesses[i2] * MINUTE_HAND_RED;
                 green += minutePixelBrightnesses[i2] * MINUTE_HAND_GREEN;
                 blue += minutePixelBrightnesses[i2] * MINUTE_HAND_BLUE;
             }
-            if(USE_SECONDS)
+            // Set the blue if there is an second pixel with the current index
+            if(secondPixelIndexes[i2] == i && SHOW_MILLISECOND_HAND)
             {
-                // Set the blue if there is an second pixel with the current index
-                if(secondPixelIndexes[i2] == i)
-                {
-                    red += secondPixelBrightnesses[i2] * SECOND_HAND_RED;
-                    green += secondPixelBrightnesses[i2] * SECOND_HAND_GREEN;
-                    blue += secondPixelBrightnesses[i2] * SECOND_HAND_BLUE;
-                }
+                red += secondPixelBrightnesses[i2] * SECOND_HAND_RED;
+                green += secondPixelBrightnesses[i2] * SECOND_HAND_GREEN;
+                blue += secondPixelBrightnesses[i2] * SECOND_HAND_BLUE;
             }
-            else
+            // Set the blue if there is an millisecond pixel with the current index
+            if(millisecondPixelIndexes[i2] == i && SHOW_MILLISECOND_HAND)
             {
-                // Set the blue if there is an millisecond pixel with the current index
-                if(millisecondPixelIndexes[i2] == i)
-                {
-                    red += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_RED;
-                    green += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_GREEN;
-                    blue += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_BLUE;
-                }
+                red += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_RED;
+                green += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_GREEN;
+                blue += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_BLUE;
             }
         }
         
