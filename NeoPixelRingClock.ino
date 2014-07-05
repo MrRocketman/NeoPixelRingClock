@@ -2,6 +2,10 @@
 
 // TODO: Blink
 
+#define START_HOUR 4
+#define START_MINUTE 50
+#define START_SECOND 0
+
 #define NUMBER_OF_PIXELS_IN_RING 16
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
@@ -9,9 +13,9 @@
 
 #define NUMBER_OF_LEDS_FOR_HOUR_HAND 1
 #define NUMBER_OF_LEDS_FOR_MINUTE_HAND 1
-#define NUMBER_OF_LEDS_FOR_SECOND_HAND 3
+#define NUMBER_OF_LEDS_FOR_SECOND_HAND 1
 #define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 3
-#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 5 // ********* Make sure to set this ************
+#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 3 // ********* Make sure to set this ************
 
 #define HOUR_HAND_RED 1.0
 #define HOUR_HAND_GREEN 0.0
@@ -28,13 +32,12 @@
 
 // If using type 2, the NUMBER_OF_LEDS_FOR_xxxx_HAND above should be odd numbers
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
+#define BLINK_RATE 3 // 0 = no blink, otherwise the number is hertz / 2
 
 #define SHOW_HOUR_HAND 1
 #define SHOW_MINUTE_HAND 1
 #define SHOW_SECOND_HAND 1
 #define SHOW_MILLISECOND_HAND 1
-
-#define BLINK 0
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
@@ -64,10 +67,6 @@ int secondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int secondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int millisecondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int millisecondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
-
-int startHour = 4;
-int startMinute = 30;
-int startSecond = 0;
 
 int directionOffset = 0;
 int topLEDOffset = 0;
@@ -125,49 +124,52 @@ void showTime()
         green = 0;
         blue = 0;
         
-        for(int i2 = 0; i2 < LARGEST_NUMBER_OF_LEDS_FOR_A_HAND; i2 ++)
+        if(!BLINK_RATE || (BLINK_RATE && fmod(floatSecond(), 2.0 / BLINK_RATE) > 1.0 / BLINK_RATE))
         {
-            // Set the red if there is an hour pixel with the current index
-            if(hourPixelIndexes[i2] == i && SHOW_HOUR_HAND)
+            for(int i2 = 0; i2 < LARGEST_NUMBER_OF_LEDS_FOR_A_HAND; i2 ++)
             {
-                red += hourPixelBrightnesses[i2] * HOUR_HAND_RED;
-                green += hourPixelBrightnesses[i2] * HOUR_HAND_GREEN;
-                blue += hourPixelBrightnesses[i2] * HOUR_HAND_BLUE;
+                // Set the red if there is an hour pixel with the current index
+                if(hourPixelIndexes[i2] == i && SHOW_HOUR_HAND)
+                {
+                    red += hourPixelBrightnesses[i2] * HOUR_HAND_RED;
+                    green += hourPixelBrightnesses[i2] * HOUR_HAND_GREEN;
+                    blue += hourPixelBrightnesses[i2] * HOUR_HAND_BLUE;
+                }
+                // Set the green if there is an minute pixel with the current index
+                if(minutePixelIndexes[i2] == i && SHOW_MINUTE_HAND)
+                {
+                    red += minutePixelBrightnesses[i2] * MINUTE_HAND_RED;
+                    green += minutePixelBrightnesses[i2] * MINUTE_HAND_GREEN;
+                    blue += minutePixelBrightnesses[i2] * MINUTE_HAND_BLUE;
+                }
+                // Set the blue if there is an second pixel with the current index
+                if(secondPixelIndexes[i2] == i && SHOW_SECOND_HAND)
+                {
+                    red += secondPixelBrightnesses[i2] * SECOND_HAND_RED;
+                    green += secondPixelBrightnesses[i2] * SECOND_HAND_GREEN;
+                    blue += secondPixelBrightnesses[i2] * SECOND_HAND_BLUE;
+                }
+                // Set the blue if there is an millisecond pixel with the current index
+                if(millisecondPixelIndexes[i2] == i && SHOW_MILLISECOND_HAND)
+                {
+                    red += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_RED;
+                    green += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_GREEN;
+                    blue += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_BLUE;
+                }
             }
-            // Set the green if there is an minute pixel with the current index
-            if(minutePixelIndexes[i2] == i && SHOW_MINUTE_HAND)
+            
+            if(red > 255)
             {
-                red += minutePixelBrightnesses[i2] * MINUTE_HAND_RED;
-                green += minutePixelBrightnesses[i2] * MINUTE_HAND_GREEN;
-                blue += minutePixelBrightnesses[i2] * MINUTE_HAND_BLUE;
+                red = 255;
             }
-            // Set the blue if there is an second pixel with the current index
-            if(secondPixelIndexes[i2] == i && SHOW_MILLISECOND_HAND)
+            if(green > 255)
             {
-                red += secondPixelBrightnesses[i2] * SECOND_HAND_RED;
-                green += secondPixelBrightnesses[i2] * SECOND_HAND_GREEN;
-                blue += secondPixelBrightnesses[i2] * SECOND_HAND_BLUE;
+                green = 255;
             }
-            // Set the blue if there is an millisecond pixel with the current index
-            if(millisecondPixelIndexes[i2] == i && SHOW_MILLISECOND_HAND)
+            if(blue > 255)
             {
-                red += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_RED;
-                green += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_GREEN;
-                blue += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_BLUE;
+                blue = 255;
             }
-        }
-        
-        if(red > 255)
-        {
-            red = 255;
-        }
-        if(green > 255)
-        {
-            green = 255;
-        }
-        if(blue > 255)
-        {
-            blue = 255;
         }
         
         strip.setPixelColor(i, strip.Color(red, green, blue));
@@ -327,17 +329,17 @@ float rawMillisecond()
 
 float rawSecond()
 {
-    return rawMillisecond() / 1000.0 + startSecond;
+    return rawMillisecond() / 1000.0 + START_SECOND;
 }
 
 float rawMinute()
 {
-    return rawSecond() / 60.0 + startMinute;
+    return rawSecond() / 60.0 + START_MINUTE;
 }
 
 float rawHour()
 {
-    return rawMinute() / 60.0 + startHour;
+    return rawMinute() / 60.0 + START_HOUR;
 }
 
 
