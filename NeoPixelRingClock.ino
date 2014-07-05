@@ -5,15 +5,15 @@
 #define START_SECOND 0
 
 #define NUMBER_OF_PIXELS_IN_RING 16
-#define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
+#define BRIGHTNESS 32 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
 #define DIRECTION -1 // 1 or -1 // Which direction should the watch move?
 
-#define NUMBER_OF_LEDS_FOR_HOUR_HAND 1
-#define NUMBER_OF_LEDS_FOR_MINUTE_HAND 1
-#define NUMBER_OF_LEDS_FOR_SECOND_HAND 1
-#define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 3
-#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 3 // ********* Make sure to set this ************
+#define NUMBER_OF_LEDS_FOR_HOUR_HAND 4
+#define NUMBER_OF_LEDS_FOR_MINUTE_HAND 3
+#define NUMBER_OF_LEDS_FOR_SECOND_HAND 2
+#define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 1
+#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 4 // ********* Make sure to set this ************
 
 #define HOUR_HAND_RED 1.0
 #define HOUR_HAND_GREEN 0.0
@@ -24,13 +24,13 @@
 #define SECOND_HAND_RED 0.0
 #define SECOND_HAND_GREEN 0.0
 #define SECOND_HAND_BLUE 1.0
-#define MILLISECOND_HAND_RED 0.5
-#define MILLISECOND_HAND_GREEN 0.0
-#define MILLISECOND_HAND_BLUE 0.5
+#define MILLISECOND_HAND_RED 0.33
+#define MILLISECOND_HAND_GREEN 0.33
+#define MILLISECOND_HAND_BLUE 0.33
 
 // If using type 2, the NUMBER_OF_LEDS_FOR_xxxx_HAND above should be odd numbers
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
-#define BLINK_RATE 3 // 0 = no blink, otherwise the number is hertz / 2
+#define BLINK_RATE 0 // 0 = no blink, otherwise the number is hertz / 2
 
 #define SHOW_HOUR_HAND 1
 #define SHOW_MINUTE_HAND 1
