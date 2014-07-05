@@ -12,8 +12,21 @@
 #define NUMBER_OF_LEDS_FOR_HOUR_HAND 1
 #define NUMBER_OF_LEDS_FOR_MINUTE_HAND 1
 #define NUMBER_OF_LEDS_FOR_SECOND_HAND 3
-#define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 5
+#define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 3
 #define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 5 // ********* Make sure to set this ************
+
+#define HOUR_HAND_RED 1.0
+#define HOUR_HAND_GREEN 0.0
+#define HOUR_HAND_BLUE 0.0
+#define MINUTE_HAND_RED 0.0
+#define MINUTE_HAND_GREEN 1.0
+#define MINUTE_HAND_BLUE 0.0
+#define SECOND_HAND_RED 0.0
+#define SECOND_HAND_GREEN 0.0
+#define SECOND_HAND_BLUE 1.0
+#define MILLISECOND_HAND_RED 0.5
+#define MILLISECOND_HAND_GREEN 0.0
+#define MILLISECOND_HAND_BLUE 0.5
 
 // If using type 2, the NUMBER_OF_LEDS_FOR_xxxx_HAND above should be odd numbers
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
@@ -51,7 +64,7 @@ int millisecondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int millisecondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 
 int startHour = 4;
-int startMinute = 16;
+int startMinute = 30;
 int startSecond = 0;
 
 int directionOffset = 0;
@@ -109,19 +122,25 @@ void showTime()
             // Set the red if there is an hour pixel with the current index
             if(hourPixelIndexes[i2] == i)
             {
-                red = hourPixelBrightnesses[i2];
+                red += hourPixelBrightnesses[i2] * HOUR_HAND_RED;
+                green += hourPixelBrightnesses[i2] * HOUR_HAND_GREEN;
+                blue += hourPixelBrightnesses[i2] * HOUR_HAND_BLUE;
             }
             // Set the green if there is an minute pixel with the current index
             if(minutePixelIndexes[i2] == i)
             {
-                green = minutePixelBrightnesses[i2];
+                red += minutePixelBrightnesses[i2] * MINUTE_HAND_RED;
+                green += minutePixelBrightnesses[i2] * MINUTE_HAND_GREEN;
+                blue += minutePixelBrightnesses[i2] * MINUTE_HAND_BLUE;
             }
             if(USE_SECONDS)
             {
                 // Set the blue if there is an second pixel with the current index
                 if(secondPixelIndexes[i2] == i)
                 {
-                    blue = secondPixelBrightnesses[i2];
+                    red += secondPixelBrightnesses[i2] * SECOND_HAND_RED;
+                    green += secondPixelBrightnesses[i2] * SECOND_HAND_GREEN;
+                    blue += secondPixelBrightnesses[i2] * SECOND_HAND_BLUE;
                 }
             }
             else
@@ -129,9 +148,24 @@ void showTime()
                 // Set the blue if there is an millisecond pixel with the current index
                 if(millisecondPixelIndexes[i2] == i)
                 {
-                    blue = millisecondPixelBrightnesses[i2];
+                    red += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_RED;
+                    green += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_GREEN;
+                    blue += millisecondPixelBrightnesses[i2] * MILLISECOND_HAND_BLUE;
                 }
             }
+        }
+        
+        if(red > 255)
+        {
+            red = 255;
+        }
+        if(green > 255)
+        {
+            green = 255;
+        }
+        if(blue > 255)
+        {
+            blue = 255;
         }
         
         strip.setPixelColor(i, strip.Color(red, green, blue));
