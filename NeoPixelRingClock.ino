@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 #define NUMBER_OF_PIXELS_IN_RING 16
-#define BRIGHTNESS 127 // From 0...255
+#define BRIGHTNESS 32 // From 0...255 // Make sure your power supply can handle this
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
 #define DIRECTION -1 // 1 or -1
 #define NUMBER_OF_LEDS_PER_CLOCK_HAND 2
@@ -33,7 +33,7 @@ int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 
 int startHour = 1;
-int startMinute = 21;
+int startMinute = 24;
 int startSecond = 15;
 
 int directionOffset = 0;
@@ -62,16 +62,6 @@ void setup()
 void loop() 
 {
     showTime();
-}
-
-void resetPixels()
-{
-  memset(hourPixelIndexes, -1, 2);
-  memset(hourPixelBrightnesses, -1, 2);
-  memset(minutePixelIndexes, -1, 2);
-  memset(minutePixelBrightnesses, -1, 2);
-  memset(secondPixelIndexes, -1, 2);
-  memset(secondPixelBrightnesses, -1, 2);
 }
 
 void showTime()
@@ -116,24 +106,14 @@ void showTime()
   resetPixels();
 }
 
-// time should be floatHour() * PIXELS_PER_HOUR or changed to minutes or seconds
-void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
-{ 
-  
-  time = time * pixelsPerUnit;
-  brightnessArray[0] = (time - (int)time) * BRIGHTNESS;
-  pixelIndexesArray[0] = directionOffset - (topLEDOffset + ((int)time + 1)) * -DIRECTION;
-  if(pixelIndexesArray[0] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    pixelIndexesArray[0] %= NUMBER_OF_PIXELS_IN_RING;
-  }
-  
-  brightnessArray[1] = ((int)time + 1 - time) * BRIGHTNESS;
-  pixelIndexesArray[1] = directionOffset - (topLEDOffset + ((int)time))  * -DIRECTION;
-  if(pixelIndexesArray[1] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    pixelIndexesArray[1] %= NUMBER_OF_PIXELS_IN_RING;
-  }
+void resetPixels()
+{
+  memset(hourPixelIndexes, -1, 2);
+  memset(hourPixelBrightnesses, -1, 2);
+  memset(minutePixelIndexes, -1, 2);
+  memset(minutePixelBrightnesses, -1, 2);
+  memset(secondPixelIndexes, -1, 2);
+  memset(secondPixelBrightnesses, -1, 2);
 }
 
 void determineHourPixels()
@@ -151,6 +131,25 @@ void determineSecondPixels()
   determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes); 
 }
 
+void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
+{ 
+  //NUMBER_OF_LEDS_PER_CLOCK_HAND
+  
+  time = time * pixelsPerUnit;
+  brightnessArray[0] = (time - (int)time) * BRIGHTNESS;
+  pixelIndexesArray[0] = directionOffset - (topLEDOffset + ((int)time + 1)) * -DIRECTION;
+  if(pixelIndexesArray[0] > NUMBER_OF_PIXELS_IN_RING - 1)
+  {
+    pixelIndexesArray[0] %= NUMBER_OF_PIXELS_IN_RING;
+  }
+  
+  brightnessArray[1] = ((int)time + 1 - time) * BRIGHTNESS;
+  pixelIndexesArray[1] = directionOffset - (topLEDOffset + ((int)time))  * -DIRECTION;
+  if(pixelIndexesArray[1] > NUMBER_OF_PIXELS_IN_RING - 1)
+  {
+    pixelIndexesArray[1] %= NUMBER_OF_PIXELS_IN_RING;
+  }
+}
 
 float floatSecond()
 {
