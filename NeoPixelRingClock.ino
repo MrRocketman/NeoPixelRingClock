@@ -1,6 +1,8 @@
 #include <Adafruit_NeoPixel.h>
 
 // TODO: Blink
+// TODO: Choose which hands
+// TODO: Choose colors
 
 #define NUMBER_OF_PIXELS_IN_RING 16
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
@@ -9,10 +11,11 @@
 
 #define NUMBER_OF_LEDS_FOR_HOUR_HAND 1
 #define NUMBER_OF_LEDS_FOR_MINUTE_HAND 1
-#define NUMBER_OF_LEDS_FOR_SECOND_HAND 5
+#define NUMBER_OF_LEDS_FOR_SECOND_HAND 3
 #define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 5
-#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 5 // ********* Make sure to Set this ************
+#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 5 // ********* Make sure to set this ************
 
+// If using type 2, the NUMBER_OF_LEDS_FOR_xxxx_HAND above should be odd numbers
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
 #define USE_SECONDS 0 // 1 means a second hand, 0 means a millisecond hand
 
@@ -47,8 +50,8 @@ int secondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int millisecondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 int millisecondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 
-int startHour = 3;
-int startMinute = 55;
+int startHour = 4;
+int startMinute = 16;
 int startSecond = 0;
 
 int directionOffset = 0;
@@ -81,8 +84,6 @@ void loop()
 
 void showTime()
 {
-    determineHourPixels();
-    determineMinutePixels();
     if(USE_SECONDS)
     {
         determineSecondPixels();
@@ -91,6 +92,8 @@ void showTime()
     {
         determineMillisecondPixels();
     }
+    determineMinutePixels();
+    determineHourPixels();
     
     uint8_t red, green, blue;
     // Set all empty pixels to empty
@@ -260,55 +263,46 @@ float floatMillisecond()
     return time;
 }
 
-int millisecond()
-{
-    int time = ((millis() / 1000) + startSecond) % 60;
-    
-    return millis();
-}
-
 float floatSecond()
 {
-    float time = fmod((millis() / 1000.0) + startSecond, 60);
-    
-    return time;
-}
-
-int second()
-{
-    int time = ((millis() / 1000) + startSecond) % 60;
+    float time = fmod(rawSecond(), 60);
     
     return time;
 }
 
 float floatMinute()
 {
-    float time = fmod((millis() / 1000.0) / 60 + startMinute, 60);
-    
-    return time;
-}
-
-int minute()
-{
-    int time = ((millis() / 1000) / 60 + startMinute) % 60;
+    float time = fmod(rawMinute(), 60);
     
     return time;
 }
 
 float floatHour()
 {
-    float time = fmod((millis() / 1000.0) / 60 / 12 + startHour, 12);
+    float time = fmod(rawHour(), 12);
     
     return time;
 }
 
-int hour()
+float rawMillisecond()
 {
-    int time = ((millis() / 1000) / 60 / 12 + startHour) % 12;
-    return time;
+    return (float)millis();
 }
 
+float rawSecond()
+{
+    return rawMillisecond() / 1000.0 + startSecond;
+}
 
+float rawMinute()
+{
+    return rawSecond() / 60.0 + startMinute;
+}
+
+float rawHour()
+{
+    return rawMinute() / 60.0 + startHour;
+}
 
 
 // Fill the dots one after the other with a color
