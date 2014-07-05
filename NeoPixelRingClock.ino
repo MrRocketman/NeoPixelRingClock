@@ -1,12 +1,12 @@
 #include <Adafruit_NeoPixel.h>
 
-#define PIN 6
-
 #define NUMBER_OF_PIXELS_IN_RING 16
-#define BRIGHTNESS 127
+#define BRIGHTNESS 127 // From 0...255
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
 #define DIRECTION -1 // 1 or -1
+#define NUMBER_OF_LEDS_PER_CLOCK_HAND 2
 
+#define NEOPIXEL_PIN 6
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -14,7 +14,7 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -25,17 +25,16 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, PIN, NEO_G
 #define PIXELS_PER_MINUTE (NUMBER_OF_PIXELS_IN_RING / 60.0)
 #define PIXELS_PER_SECOND (NUMBER_OF_PIXELS_IN_RING / 60.0)
 
-int hourPixelBrightnesses[2];
-int hourPixelIndexes[2];
-int minutePixelBrightnesses[2];
-int minutePixelIndexes[2];
-int secondPixelBrightnesses[2];
-int secondPixelIndexes[2];
-//uint32_t hourColor = strip.Color(BRIGHTNESS, 0, 0);
+int hourPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int hourPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int minutePixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int minutePixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 
-int startHour = 0;
-int startMinute = 45;
-int startSecond = 25;
+int startHour = 1;
+int startMinute = 10;
+int startSecond = 15;
 
 int directionOffset = 0;
 int topLEDOffset = 0;
@@ -90,7 +89,7 @@ void showTime()
     green = 0;
     blue = 0;
     
-    for(int i2 = 0; i2 < 2; i2 ++)
+    for(int i2 = 0; i2 < NUMBER_OF_LEDS_PER_CLOCK_HAND; i2 ++)
     {
       // Set the red if there is an hour pixel with the current index
       if(hourPixelIndexes[i2] == i)
@@ -117,70 +116,37 @@ void showTime()
   resetPixels();
 }
 
+// time should be floatHour() * PIXELS_PER_HOUR or changed to minutes or seconds
+void determineClockHandPixelsForTime(float time, int *brightnessArray, int *pixelIndexesArray)
+{ 
+  brightnessArray[0] = (time - (int)time) * BRIGHTNESS;
+  pixelIndexesArray[0] = directionOffset - (topLEDOffset + ((int)time + 1)) * -DIRECTION;
+  if(pixelIndexesArray[0] > NUMBER_OF_PIXELS_IN_RING - 1)
+  {
+    pixelIndexesArray[0] %= NUMBER_OF_PIXELS_IN_RING;
+  }
+  
+  brightnessArray[1] = ((int)time + 1 - time) * BRIGHTNESS;
+  pixelIndexesArray[1] = directionOffset - (topLEDOffset + ((int)time))  * -DIRECTION;
+  if(pixelIndexesArray[1] > NUMBER_OF_PIXELS_IN_RING - 1)
+  {
+    pixelIndexesArray[1] %= NUMBER_OF_PIXELS_IN_RING;
+  }
+}
+
 void determineHourPixels()
 {
-  float mainPixel = floatHour() * PIXELS_PER_HOUR;
-  //Serial.print("hours: ");
-  //Serial.print(floatHour());
-  //Serial.print(" main: ");
-  //Serial.println(mainPixel);
-  
-  hourPixelBrightnesses[0] = (mainPixel - (int)mainPixel) * BRIGHTNESS;
-  hourPixelIndexes[0] = directionOffset - (topLEDOffset + ((int)mainPixel + 1)) * -DIRECTION;
-  if(hourPixelIndexes[0] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    hourPixelIndexes[0] %= NUMBER_OF_PIXELS_IN_RING;
-  }
-  hourPixelBrightnesses[1] = ((int)mainPixel + 1 - mainPixel) * BRIGHTNESS;
-  hourPixelIndexes[1] = directionOffset - (topLEDOffset + ((int)mainPixel))  * -DIRECTION;
-  if(hourPixelIndexes[1] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    hourPixelIndexes[1] %= NUMBER_OF_PIXELS_IN_RING;
-  }
+  determineClockHandPixelsForTime(floatHour() * PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes); 
 }
 
 void determineMinutePixels()
 {
-  float mainPixel = floatMinute() * PIXELS_PER_MINUTE;
-  //Serial.print("minute: ");
-  //Serial.print(floatMinute());
-  //Serial.print(" main: ");
-  //Serial.println(mainPixel);
-  
-  minutePixelBrightnesses[0] = (mainPixel - (int)mainPixel) * BRIGHTNESS;
-  minutePixelIndexes[0] = directionOffset - (topLEDOffset + ((int)mainPixel + 1))  * -DIRECTION;
-  if(minutePixelIndexes[0] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    minutePixelIndexes[0] %= NUMBER_OF_PIXELS_IN_RING;
-  }
-  minutePixelBrightnesses[1] = ((int)mainPixel + 1 - mainPixel) * BRIGHTNESS;
-  minutePixelIndexes[1] = directionOffset - (topLEDOffset + ((int)mainPixel))  * -DIRECTION;
-  if(minutePixelIndexes[1] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    minutePixelIndexes[1] %= NUMBER_OF_PIXELS_IN_RING;
-  }
+  determineClockHandPixelsForTime(floatMinute() * PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes); 
 }
 
 void determineSecondPixels()
 {
-  float mainPixel = floatSecond() * PIXELS_PER_SECOND;
-  //Serial.print("seconds: ");
-  //Serial.print(floatSecond());
-  //Serial.print(" main: ");
-  //Serial.println(mainPixel);
-  
-  secondPixelBrightnesses[0] = (mainPixel - (int)mainPixel) * BRIGHTNESS;
-  secondPixelIndexes[0] = directionOffset - (topLEDOffset + ((int)mainPixel + 1))  * -DIRECTION;
-  if(secondPixelIndexes[0] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    secondPixelIndexes[0] %= NUMBER_OF_PIXELS_IN_RING;
-  }
-  secondPixelBrightnesses[1] = ((int)mainPixel + 1 - mainPixel) * BRIGHTNESS;
-  secondPixelIndexes[1] = directionOffset - (topLEDOffset + ((int)mainPixel))  * -DIRECTION;
-  if(secondPixelIndexes[1] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    secondPixelIndexes[1] %= NUMBER_OF_PIXELS_IN_RING;
-  }
+  determineClockHandPixelsForTime(floatSecond() * PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes); 
 }
 
 
