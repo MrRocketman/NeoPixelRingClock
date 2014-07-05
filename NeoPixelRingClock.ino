@@ -6,13 +6,18 @@
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
 #define DIRECTION -1 // 1 or -1 // Which direction should the watch move?
-#define NUMBER_OF_LEDS_PER_CLOCK_HAND 3
+
+#define NUMBER_OF_LEDS_FOR_HOUR_HAND 1
+#define NUMBER_OF_LEDS_FOR_MINUTE_HAND 1
+#define NUMBER_OF_LEDS_FOR_SECOND_HAND 5
+#define NUMBER_OF_LEDS_FOR_MILLISECOND_HAND 5
+#define LARGEST_NUMBER_OF_LEDS_FOR_A_HAND 5 // ********* Make sure to Set this ************
+
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
 #define USE_SECONDS 0 // 1 means a second hand, 0 means a millisecond hand
 
 #define BLINK 0
 
-#define NEOPIXEL_PIN 6
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = Arduino pin number (most are valid)
 // Parameter 3 = pixel type flags, add together as needed:
@@ -20,6 +25,7 @@
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
+#define NEOPIXEL_PIN 6
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
@@ -32,17 +38,17 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, NEOPIXEL_P
 #define PIXELS_PER_SECOND (NUMBER_OF_PIXELS_IN_RING / 60.0)
 #define PIXELS_PER_MILLISECOND (NUMBER_OF_PIXELS_IN_RING / 1000.0)
 
-int hourPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int hourPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int minutePixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int minutePixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int millisecondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
-int millisecondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int hourPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int hourPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int minutePixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int minutePixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int secondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int secondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int millisecondPixelBrightnesses[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
+int millisecondPixelIndexes[LARGEST_NUMBER_OF_LEDS_FOR_A_HAND];
 
 int startHour = 3;
-int startMinute = 30;
+int startMinute = 55;
 int startSecond = 0;
 
 int directionOffset = 0;
@@ -95,7 +101,7 @@ void showTime()
         green = 0;
         blue = 0;
         
-        for(int i2 = 0; i2 < NUMBER_OF_LEDS_PER_CLOCK_HAND; i2 ++)
+        for(int i2 = 0; i2 < LARGEST_NUMBER_OF_LEDS_FOR_A_HAND; i2 ++)
         {
             // Set the red if there is an hour pixel with the current index
             if(hourPixelIndexes[i2] == i)
@@ -135,54 +141,54 @@ void showTime()
 
 void resetPixels()
 {
-    memset(hourPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(hourPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(minutePixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(minutePixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(secondPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(secondPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(millisecondPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
-    memset(millisecondPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(hourPixelIndexes, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(hourPixelBrightnesses, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(minutePixelIndexes, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(minutePixelBrightnesses, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(secondPixelIndexes, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(secondPixelBrightnesses, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(millisecondPixelIndexes, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
+    memset(millisecondPixelBrightnesses, -1, LARGEST_NUMBER_OF_LEDS_FOR_A_HAND);
 }
 
 void determineHourPixels()
 {
-    determineClockHandPixelsForTime(floatHour(), PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes);
+    determineClockHandPixelsForTime(floatHour(), PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes, NUMBER_OF_LEDS_FOR_HOUR_HAND);
 }
 
 void determineMinutePixels()
 {
-    determineClockHandPixelsForTime(floatMinute(), PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes);
+    determineClockHandPixelsForTime(floatMinute(), PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes, NUMBER_OF_LEDS_FOR_MINUTE_HAND);
 }
 
 void determineSecondPixels()
 {
-    determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes);
+    determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes, NUMBER_OF_LEDS_FOR_SECOND_HAND);
 }
 
 void determineMillisecondPixels()
 {
-    determineClockHandPixelsForTime(floatMillisecond(), PIXELS_PER_MILLISECOND, millisecondPixelBrightnesses, millisecondPixelIndexes);
+    determineClockHandPixelsForTime(floatMillisecond(), PIXELS_PER_MILLISECOND, millisecondPixelBrightnesses, millisecondPixelIndexes, NUMBER_OF_LEDS_FOR_MILLISECOND_HAND);
 }
 
-void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
+void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray, int numberOfLEDsToUse)
 {
     //BLINK
     
     // Traling
     if(HAND_DISPLAY_TYPE == 0)
     {
-        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, NUMBER_OF_LEDS_PER_CLOCK_HAND, 0, -1);
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfLEDsToUse, 0, -1);
     }
     // Leading
     else if(HAND_DISPLAY_TYPE == 1)
     {
-        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, NUMBER_OF_LEDS_PER_CLOCK_HAND, 0, 1);
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfLEDsToUse, 0, 1);
     }
     // Leading And Trailing
     else if(HAND_DISPLAY_TYPE == 2)
     {
-        int numberOfPixels = ((NUMBER_OF_LEDS_PER_CLOCK_HAND % 2 == 1) ? ((NUMBER_OF_LEDS_PER_CLOCK_HAND + 1) / 2) : (NUMBER_OF_LEDS_PER_CLOCK_HAND / 2));
+        int numberOfPixels = ((numberOfLEDsToUse % 2 == 1) ? ((numberOfLEDsToUse + 1) / 2) : (numberOfLEDsToUse / 2));
         ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfPixels, 0, -1);
         ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfPixels, numberOfPixels - 1, 1);
     }
