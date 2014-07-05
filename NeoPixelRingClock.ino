@@ -1,11 +1,15 @@
 #include <Adafruit_NeoPixel.h>
 
+// TODO: Blink
+
 #define NUMBER_OF_PIXELS_IN_RING 16
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
-#define DIRECTION -1 // 1 or -1 // Which direction should the watch move? 
+#define DIRECTION -1 // 1 or -1 // Which direction should the watch move?
 #define NUMBER_OF_LEDS_PER_CLOCK_HAND 3
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
+#define USE_SECONDS 0 // 1 means a second hand, 0 means a millisecond hand
+
 #define BLINK 0
 
 #define NEOPIXEL_PIN 6
@@ -26,6 +30,7 @@ Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMBER_OF_PIXELS_IN_RING, NEOPIXEL_P
 #define PIXELS_PER_HOUR (NUMBER_OF_PIXELS_IN_RING / 12.0)
 #define PIXELS_PER_MINUTE (NUMBER_OF_PIXELS_IN_RING / 60.0)
 #define PIXELS_PER_SECOND (NUMBER_OF_PIXELS_IN_RING / 60.0)
+#define PIXELS_PER_MILLISECOND (NUMBER_OF_PIXELS_IN_RING / 1000.0)
 
 int hourPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int hourPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
@@ -33,6 +38,8 @@ int minutePixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int minutePixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int millisecondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
+int millisecondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 
 int startHour = 3;
 int startMinute = 30;
@@ -70,7 +77,14 @@ void showTime()
 {
     determineHourPixels();
     determineMinutePixels();
-    determineSecondPixels();
+    if(USE_SECONDS)
+    {
+        determineSecondPixels();
+    }
+    else
+    {
+        determineMillisecondPixels();
+    }
     
     uint8_t red, green, blue;
     // Set all empty pixels to empty
@@ -93,10 +107,21 @@ void showTime()
             {
                 green = minutePixelBrightnesses[i2];
             }
-            // Set the blue if there is an second pixel with the current index
-            if(secondPixelIndexes[i2] == i)
+            if(USE_SECONDS)
             {
-                blue = secondPixelBrightnesses[i2];
+                // Set the blue if there is an second pixel with the current index
+                if(secondPixelIndexes[i2] == i)
+                {
+                    blue = secondPixelBrightnesses[i2];
+                }
+            }
+            else
+            {
+                // Set the blue if there is an millisecond pixel with the current index
+                if(millisecondPixelIndexes[i2] == i)
+                {
+                    blue = millisecondPixelBrightnesses[i2];
+                }
             }
         }
         
@@ -110,12 +135,14 @@ void showTime()
 
 void resetPixels()
 {
-    memset(hourPixelIndexes, -1, 2);
-    memset(hourPixelBrightnesses, -1, 2);
-    memset(minutePixelIndexes, -1, 2);
-    memset(minutePixelBrightnesses, -1, 2);
-    memset(secondPixelIndexes, -1, 2);
-    memset(secondPixelBrightnesses, -1, 2);
+    memset(hourPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(hourPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(minutePixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(minutePixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(secondPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(secondPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(millisecondPixelIndexes, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
+    memset(millisecondPixelBrightnesses, -1, NUMBER_OF_LEDS_PER_CLOCK_HAND);
 }
 
 void determineHourPixels()
@@ -131,6 +158,11 @@ void determineMinutePixels()
 void determineSecondPixels()
 {
     determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes);
+}
+
+void determineMillisecondPixels()
+{
+    determineClockHandPixelsForTime(floatMillisecond(), PIXELS_PER_MILLISECOND, millisecondPixelBrightnesses, millisecondPixelIndexes);
 }
 
 void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
@@ -213,6 +245,20 @@ int rawIndexToRingIndex(int rawIndex)
     }
     
     return rawIndex;
+}
+
+float floatMillisecond()
+{
+    float time = fmod(millis(), 1000);
+    
+    return time;
+}
+
+int millisecond()
+{
+    int time = ((millis() / 1000) + startSecond) % 60;
+    
+    return millis();
 }
 
 float floatSecond()
