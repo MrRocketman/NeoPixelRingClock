@@ -3,7 +3,7 @@
 #define NUMBER_OF_PIXELS_IN_RING 16
 #define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
-#define DIRECTION -1 // 1 or -1
+#define DIRECTION -1 // 1 or -1 // Which direction should the watch move? 
 #define NUMBER_OF_LEDS_PER_CLOCK_HAND 3
 #define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
 #define BLINK 0
