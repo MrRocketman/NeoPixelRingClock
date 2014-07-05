@@ -1,10 +1,12 @@
 #include <Adafruit_NeoPixel.h>
 
 #define NUMBER_OF_PIXELS_IN_RING 16
-#define BRIGHTNESS 32 // From 0...255 // Make sure your power supply can handle this
+#define BRIGHTNESS 64 // From 0...255 *************** Make sure your power supply can handle this * NUMBER_OF_LEDS_PER_CLOCK_HAND ******************
 #define TOP_LED 1 // A positive number from 0...(NUMBER_OF_PIXELS_IN_RING - 1)
 #define DIRECTION -1 // 1 or -1
-#define NUMBER_OF_LEDS_PER_CLOCK_HAND 2
+#define NUMBER_OF_LEDS_PER_CLOCK_HAND 3
+#define HAND_DISPLAY_TYPE 0 // 0 = trailing leds, 1 = leading leds, 2 = leading and trailing leds
+#define BLINK 0
 
 #define NEOPIXEL_PIN 6
 // Parameter 1 = number of pixels in strip
@@ -32,9 +34,9 @@ int minutePixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelBrightnesses[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 int secondPixelIndexes[NUMBER_OF_LEDS_PER_CLOCK_HAND];
 
-int startHour = 1;
-int startMinute = 24;
-int startSecond = 15;
+int startHour = 3;
+int startMinute = 30;
+int startSecond = 0;
 
 int directionOffset = 0;
 int topLEDOffset = 0;
@@ -43,221 +45,283 @@ void determineHourPixels();
 void determineMinutePixels();
 void determineSecondPixels();
 
-void setup() 
+void setup()
 {
-  Serial.begin(9600);
-  
-  if(DIRECTION == -1)
-  {
-    directionOffset = NUMBER_OF_PIXELS_IN_RING;
-  }
-  topLEDOffset = TOP_LED * DIRECTION;
-  
-  resetPixels();
-  
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
+    Serial.begin(9600);
+    
+    if(DIRECTION == -1)
+    {
+        directionOffset = NUMBER_OF_PIXELS_IN_RING;
+    }
+    topLEDOffset = TOP_LED * DIRECTION;
+    
+    resetPixels();
+    
+    strip.begin();
+    strip.show(); // Initialize all pixels to 'off'
 }
 
-void loop() 
+void loop()
 {
     showTime();
 }
 
 void showTime()
 {
-  determineHourPixels();
-  determineMinutePixels();
-  determineSecondPixels();
-  
-  uint8_t red, green, blue;
-  // Set all empty pixels to empty
-  for(int i = 0; i < NUMBER_OF_PIXELS_IN_RING; i ++)
-  {
-    // Default to no color
-    red = 0;
-    green = 0;
-    blue = 0;
+    determineHourPixels();
+    determineMinutePixels();
+    determineSecondPixels();
     
-    for(int i2 = 0; i2 < NUMBER_OF_LEDS_PER_CLOCK_HAND; i2 ++)
+    uint8_t red, green, blue;
+    // Set all empty pixels to empty
+    for(int i = 0; i < NUMBER_OF_PIXELS_IN_RING; i ++)
     {
-      // Set the red if there is an hour pixel with the current index
-      if(hourPixelIndexes[i2] == i)
-      {
-        red = hourPixelBrightnesses[i2];
-      }
-      // Set the green if there is an minute pixel with the current index
-      if(minutePixelIndexes[i2] == i)
-      {
-        green = minutePixelBrightnesses[i2];
-      }
-      // Set the blue if there is an second pixel with the current index
-      if(secondPixelIndexes[i2] == i)
-      {
-        blue = secondPixelBrightnesses[i2];
-      }
+        // Default to no color
+        red = 0;
+        green = 0;
+        blue = 0;
+        
+        for(int i2 = 0; i2 < NUMBER_OF_LEDS_PER_CLOCK_HAND; i2 ++)
+        {
+            // Set the red if there is an hour pixel with the current index
+            if(hourPixelIndexes[i2] == i)
+            {
+                red = hourPixelBrightnesses[i2];
+            }
+            // Set the green if there is an minute pixel with the current index
+            if(minutePixelIndexes[i2] == i)
+            {
+                green = minutePixelBrightnesses[i2];
+            }
+            // Set the blue if there is an second pixel with the current index
+            if(secondPixelIndexes[i2] == i)
+            {
+                blue = secondPixelBrightnesses[i2];
+            }
+        }
+        
+        strip.setPixelColor(i, strip.Color(red, green, blue));
     }
     
-    strip.setPixelColor(i, strip.Color(red, green, blue));
-  }
-  
-  strip.show();
-  
-  resetPixels();
+    strip.show();
+    
+    resetPixels();
 }
 
 void resetPixels()
 {
-  memset(hourPixelIndexes, -1, 2);
-  memset(hourPixelBrightnesses, -1, 2);
-  memset(minutePixelIndexes, -1, 2);
-  memset(minutePixelBrightnesses, -1, 2);
-  memset(secondPixelIndexes, -1, 2);
-  memset(secondPixelBrightnesses, -1, 2);
+    memset(hourPixelIndexes, -1, 2);
+    memset(hourPixelBrightnesses, -1, 2);
+    memset(minutePixelIndexes, -1, 2);
+    memset(minutePixelBrightnesses, -1, 2);
+    memset(secondPixelIndexes, -1, 2);
+    memset(secondPixelBrightnesses, -1, 2);
 }
 
 void determineHourPixels()
 {
-  determineClockHandPixelsForTime(floatHour(), PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes); 
+    determineClockHandPixelsForTime(floatHour(), PIXELS_PER_HOUR, hourPixelBrightnesses, hourPixelIndexes);
 }
 
 void determineMinutePixels()
 {
-  determineClockHandPixelsForTime(floatMinute(), PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes); 
+    determineClockHandPixelsForTime(floatMinute(), PIXELS_PER_MINUTE, minutePixelBrightnesses, minutePixelIndexes);
 }
 
 void determineSecondPixels()
 {
-  determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes); 
+    determineClockHandPixelsForTime(floatSecond(), PIXELS_PER_SECOND, secondPixelBrightnesses, secondPixelIndexes);
 }
 
 void determineClockHandPixelsForTime(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray)
-{ 
-  //NUMBER_OF_LEDS_PER_CLOCK_HAND
-  
-  time = time * pixelsPerUnit;
-  brightnessArray[0] = (time - (int)time) * BRIGHTNESS;
-  pixelIndexesArray[0] = directionOffset - (topLEDOffset + ((int)time + 1)) * -DIRECTION;
-  if(pixelIndexesArray[0] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    pixelIndexesArray[0] %= NUMBER_OF_PIXELS_IN_RING;
-  }
-  
-  brightnessArray[1] = ((int)time + 1 - time) * BRIGHTNESS;
-  pixelIndexesArray[1] = directionOffset - (topLEDOffset + ((int)time))  * -DIRECTION;
-  if(pixelIndexesArray[1] > NUMBER_OF_PIXELS_IN_RING - 1)
-  {
-    pixelIndexesArray[1] %= NUMBER_OF_PIXELS_IN_RING;
-  }
+{
+    //BLINK
+    
+    // Traling
+    if(HAND_DISPLAY_TYPE == 0)
+    {
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, NUMBER_OF_LEDS_PER_CLOCK_HAND, 0, -1);
+    }
+    // Leading
+    else if(HAND_DISPLAY_TYPE == 1)
+    {
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, NUMBER_OF_LEDS_PER_CLOCK_HAND, 0, 1);
+    }
+    // Leading And Trailing
+    else if(HAND_DISPLAY_TYPE == 2)
+    {
+        int numberOfPixels = ((NUMBER_OF_LEDS_PER_CLOCK_HAND % 2 == 1) ? ((NUMBER_OF_LEDS_PER_CLOCK_HAND + 1) / 2) : (NUMBER_OF_LEDS_PER_CLOCK_HAND / 2));
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfPixels, 0, -1);
+        ledTrail(time, pixelsPerUnit, brightnessArray, pixelIndexesArray, numberOfPixels, numberOfPixels - 1, 1);
+    }
+}
+
+// direction = -1 means trailing, direction = 1 means leading
+void ledTrail(float time, float pixelsPerUnit, int *brightnessArray, int *pixelIndexesArray, int pixelsToUse, int arrayOffset, int direction)
+{
+    float pixelIndexFloat = time * pixelsPerUnit;
+    int pixelIndex = (int)(time * pixelsPerUnit);
+    
+    float percentageBetweenPixels = 0;
+    // Goes from 1.0 - 0.0
+    if(direction == -1)
+    {
+        percentageBetweenPixels = (pixelIndex + 1 - pixelIndexFloat);
+    }
+    // Goes from 0.0 - 1.0
+    else
+    {
+        percentageBetweenPixels = (pixelIndexFloat - pixelIndex);
+    }
+    
+    // The first pixel
+    brightnessArray[0] =  BRIGHTNESS;
+    pixelIndexesArray[0] = rawIndexToRingIndex(directionOffset - (topLEDOffset + pixelIndex * -DIRECTION));
+    
+    // The middle pixels
+    if(pixelsToUse > 2)
+    {
+        for(int i = 1; i < pixelsToUse - 1; i ++)
+        {
+            brightnessArray[arrayOffset + i] = BRIGHTNESS / (2 * i) + percentageBetweenPixels * BRIGHTNESS / (2 * i);
+            pixelIndexesArray[arrayOffset + i] = rawIndexToRingIndex(directionOffset - (topLEDOffset + (pixelIndex + (i * direction))) * -DIRECTION);
+        }
+    }
+    
+    // The last pixel
+    if(pixelsToUse > 2)
+    {
+        brightnessArray[arrayOffset + pixelsToUse - 1] = percentageBetweenPixels * BRIGHTNESS / (2 * (pixelsToUse - 2));
+        pixelIndexesArray[arrayOffset + pixelsToUse - 1] = rawIndexToRingIndex(directionOffset - (topLEDOffset + (pixelIndex + (pixelsToUse - 1) * direction)) * -DIRECTION);
+    }
+    else if(pixelsToUse > 1)
+    {
+        brightnessArray[arrayOffset + pixelsToUse - 1] = percentageBetweenPixels * BRIGHTNESS / 2;
+        pixelIndexesArray[arrayOffset + pixelsToUse - 1] = rawIndexToRingIndex(directionOffset - (topLEDOffset + (pixelIndex + (pixelsToUse - 1) * direction)) * -DIRECTION);
+    }
+}
+
+int rawIndexToRingIndex(int rawIndex)
+{
+    if(rawIndex > NUMBER_OF_PIXELS_IN_RING - 1)
+    {
+        rawIndex %= NUMBER_OF_PIXELS_IN_RING;
+    }
+    else if(rawIndex < 0)
+    {
+        rawIndex += NUMBER_OF_PIXELS_IN_RING;
+    }
+    
+    return rawIndex;
 }
 
 float floatSecond()
 {
-  float time = fmod((millis() / 1000.0) + startSecond, 60);
-  
-  return time;
+    float time = fmod((millis() / 1000.0) + startSecond, 60);
+    
+    return time;
 }
 
 int second()
 {
-  int time = ((millis() / 1000) + startSecond) % 60;
-  
-  return time;
+    int time = ((millis() / 1000) + startSecond) % 60;
+    
+    return time;
 }
 
 float floatMinute()
 {
-  float time = fmod((millis() / 1000.0) / 60 + startMinute, 60);
-  
-  return time;
+    float time = fmod((millis() / 1000.0) / 60 + startMinute, 60);
+    
+    return time;
 }
 
 int minute()
 {
-  int time = ((millis() / 1000) / 60 + startMinute) % 60;
-  
-  return time;
+    int time = ((millis() / 1000) / 60 + startMinute) % 60;
+    
+    return time;
 }
 
 float floatHour()
 {
-  float time = fmod((millis() / 1000.0) / 60 / 12 + startHour, 12);
-  
-  return time;
+    float time = fmod((millis() / 1000.0) / 60 / 12 + startHour, 12);
+    
+    return time;
 }
 
 int hour()
 {
-  int time = ((millis() / 1000) / 60 / 12 + startHour) % 12;  
-  return time;
+    int time = ((millis() / 1000) / 60 / 12 + startHour) % 12;
+    return time;
 }
 
 
 
 
 // Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) 
+void colorWipe(uint32_t c, uint8_t wait)
 {
-  for(uint16_t i=0; i<strip.numPixels(); i++) 
-  {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
-  }
-}
-
-// Fill the dots one after the other with a color
-void inverseColorWipe(uint32_t c, uint8_t wait) 
-{
-  for(uint16_t i=strip.numPixels() - 1; i>0; i--) 
-  {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
-  }
-}
-
-void rainbow(uint8_t wait) 
-{
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) 
-  {
-    for(i=0; i<strip.numPixels(); i++) 
+    for(uint16_t i=0; i<strip.numPixels(); i++)
     {
-      strip.setPixelColor(i, Wheel((i+j) & BRIGHTNESS));
+        strip.setPixelColor(i, c);
+        strip.show();
+        delay(wait);
     }
-    strip.show();
-    delay(wait);
-  }
+}
+
+// Fill the dots one after the other with a color
+void inverseColorWipe(uint32_t c, uint8_t wait)
+{
+    for(uint16_t i=strip.numPixels() - 1; i>0; i--)
+    {
+        strip.setPixelColor(i, c);
+        strip.show();
+        delay(wait);
+    }
+}
+
+void rainbow(uint8_t wait)
+{
+    uint16_t i, j;
+    
+    for(j=0; j<256; j++)
+    {
+        for(i=0; i<strip.numPixels(); i++)
+        {
+            strip.setPixelColor(i, Wheel((i+j) & BRIGHTNESS));
+        }
+        strip.show();
+        delay(wait);
+    }
 }
 
 // Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) 
+void rainbowCycle(uint8_t wait)
 {
-  uint16_t i, j;
-
-  for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
-    for(i=0; i< strip.numPixels(); i++)
-    {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & BRIGHTNESS));
+    uint16_t i, j;
+    
+    for(j=0; j<256*5; j++) { // 5 cycles of all colors on wheel
+        for(i=0; i< strip.numPixels(); i++)
+        {
+            strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & BRIGHTNESS));
+        }
+        strip.show();
+        delay(wait);
     }
-    strip.show();
-    delay(wait);
-  }
 }
 
 // Input a value 0 to BRIGHTNESS to get a color value.
 // The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
-  if(WheelPos < 85) {
-   return strip.Color(WheelPos * 3, BRIGHTNESS - WheelPos * 3, 0);
-  } else if(WheelPos < 170) {
-   WheelPos -= 85;
-   return strip.Color(BRIGHTNESS - WheelPos * 3, 0, WheelPos * 3);
-  } else {
-   WheelPos -= 170;
-   return strip.Color(0, WheelPos * 3, BRIGHTNESS - WheelPos * 3);
-  }
+    if(WheelPos < 85) {
+        return strip.Color(WheelPos * 3, BRIGHTNESS - WheelPos * 3, 0);
+    } else if(WheelPos < 170) {
+        WheelPos -= 85;
+        return strip.Color(BRIGHTNESS - WheelPos * 3, 0, WheelPos * 3);
+    } else {
+        WheelPos -= 170;
+        return strip.Color(0, WheelPos * 3, BRIGHTNESS - WheelPos * 3);
+    }
 }
 
